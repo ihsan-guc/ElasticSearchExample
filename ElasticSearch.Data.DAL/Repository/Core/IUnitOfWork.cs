@@ -6,7 +6,7 @@ namespace ElasticSearchExample.Data.DAL.Repository.Core
 {
     public interface IUnitOfWork
     {
-        PersonRepository PersonRepository { get; set; }
+        IPersonRepository PersonRepository { get; set; }
         int Commit();
     }
 }
