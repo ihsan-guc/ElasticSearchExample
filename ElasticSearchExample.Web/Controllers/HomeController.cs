@@ -1,15 +1,15 @@
 ﻿using ElasticSearchExample.Web.Models;
+using ExcelDataReader;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace ElasticSearchExample.Web.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         private readonly ILogger<HomeController> _logger;
 
@@ -33,5 +33,37 @@ namespace ElasticSearchExample.Web.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        [HttpGet]
+        public IActionResult PersonUpload()
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult PersonUploads(IFormFile uploadFile)
+        {
+            if (uploadFile != null)
+            {
+
+                var pathExtension = Path.GetExtension(uploadFile.FileName);
+                if (pathExtension != "xlsx")
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                MemoryStream target = new MemoryStream();
+                uploadFile.CopyTo(target);
+
+                IExcelDataReader excelReader;
+                excelReader = ExcelReaderFactory.CreateOpenXmlReader(target);
+                var fileBytes = Convert.FromBase64String(Convert.ToBase64String(target.ToArray()));
+
+                while (excelReader.Read())
+                {
+                    //excelReader.GetValue(1);
+                }
+            }
+
+            return View();
+        }
+
     }
 }

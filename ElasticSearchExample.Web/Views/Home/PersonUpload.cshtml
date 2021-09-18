@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Upload File";
+}
+<h1>@ViewData["Title"]</h1>
+<div class="container">
+    @using (Html.BeginForm("PersonUploads", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        <div class="row">
+            <div class="col-2 mr-2">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Dropdown button
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="#">Action</a>
+                        <a class="dropdown-item" href="#">Another action</a>
+                        <a class="dropdown-item" href="#">Something else here</a>
+                    </div>
+                </div>
+            </div>
+            <div class="custom-file col-8">
+                <input type="file" class="custom-file-input" id="uploadFile" name="uploadFile" @*accept=".csv"*@ placeholder="Upload Person List">
+                <label class="custom-file-label" for="uploadFile"></label>
+            </div>
+            <div class="col-1">
+                <button type="submit" class="btn btn-danger"> Save </button>
+            </div>
+        </div>
+
+    }
+</div>
+
+<form method="post" action="/Home/PersonUploads" enctype="multipart/form-data">
+    <input name="uploadFile" type="file" />
+    <button type="submit">Upload</button>
+</form>
