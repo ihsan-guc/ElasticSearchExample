@@ -1,6 +1,6 @@
 ﻿namespace ElasticSearchExample.Entites.Entities
 {
-    public class User : BaseGuidEntity
+    public class Person : BaseGuidEntity
     {
         public string UserName { get; set; }
         public string Email { get; set; }
