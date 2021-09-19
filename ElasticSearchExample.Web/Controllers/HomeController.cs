@@ -30,26 +30,22 @@ namespace ElasticSearchExample.Web.Controllers
 
         public IActionResult Index()
         {
-            ElasticSearchHelper.CreateNewIndex();
+            //ElasticSearchHelper.CreateNewIndex();
 
-            var client = ElasticSearchHelper.ElasticClientNode();
             //var response = client.Search<ElasticSearchViewModel>(p => p
             //  .From(0)
             //  .Size(10)
             //  .Query(q =>
             //  q.Term(f => f.FullName, 2) || q.MatchPhrasePrefix(mq => mq.Field(f => f.FullName).Query("HANNUS"))));
             //var responses = response.Documents?.ToList();
-
-            var dataList = client.Search<ElasticSearchViewModel>(s =>
-            s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(2))
-                  .Value("Search Value"))))).Size(100));
-            var response = dataList.Documents;
+            //ElasticSearchCreateIndex();
+            
             return View();
         }
 
         public IActionResult PersonList()
         {
-            var personList = UnitOfWork.PersonRepository.GetAll().ToList();
+            var personList = UnitOfWork.PersonRepository.GetAll().ToList().Take(10);
             PersonViewModel model = new PersonViewModel();
             model.Persons.AddRange(personList);
             return View(model);
@@ -125,8 +121,9 @@ namespace ElasticSearchExample.Web.Controllers
                                 var csvItem = rexCsvSplitter.Split(row);
                                 //if (csvItem.Count() == 1)
                                 //{
-                                person.FirstName = csvItem[1]?.ToString()?.ToLower();
-                                person.LastName = lastName.OrderBy(p => Guid.NewGuid()).FirstOrDefault()?.ToLower();
+                                person.FirstName = ToPascalCase(csvItem[1]?.ToString()?.ToLower());
+
+                                person.LastName = ToPascalCase(lastName.OrderBy(p => Guid.NewGuid()).FirstOrDefault()?.ToLower());
                                 person.ImagePath = images.OrderBy(p => Guid.NewGuid()).FirstOrDefault();
                                 person.Email = (person.FirstName + person.LastName).ToLower() + "@companygmail.com";
                                 person.UserName = (person.FirstName + " " + person.LastName).ToUpper();
@@ -163,6 +160,15 @@ namespace ElasticSearchExample.Web.Controllers
             var response = client.IndexManyAsync(personList.Take(2000), "defaultindex");
         }
 
+
+        public List<ElasticSearchViewModel> ElasticSearchName(string value)
+        {
+            var client = ElasticSearchHelper.ElasticClientNode();
+            var dataList = client.Search<ElasticSearchViewModel>(s =>
+            s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(2))
+                  .Value("Mary"))))).Size(100));
+            return dataList.Documents.ToList();
+        }
         public static string ToPascalCase(string original)
         {
             Regex invalidCharsRgx = new Regex("[^_a-zA-Z0-9]");
@@ -171,18 +177,11 @@ namespace ElasticSearchExample.Web.Controllers
             Regex firstCharFollowedByUpperCasesOnly = new Regex("(?<=[A-Z])[A-Z0-9]+$");
             Regex lowerCaseNextToNumber = new Regex("(?<=[0-9])[a-z]");
             Regex upperCaseInside = new Regex("(?<=[A-Z])[A-Z]+?((?=[A-Z][a-z])|(?=[0-9]))");
-
-            // replace white spaces with undescore, then replace all invalid chars with empty string
             var pascalCase = invalidCharsRgx.Replace(whiteSpace.Replace(original, "_"), string.Empty)
-                // split by underscores
                 .Split(new char[] { '_' }, StringSplitOptions.RemoveEmptyEntries)
-                // set first letter to uppercase
                 .Select(w => startsWithLowerCaseChar.Replace(w, m => m.Value.ToUpper()))
-                // replace second and all following upper case letters to lower if there is no next lower (ABC -> Abc)
                 .Select(w => firstCharFollowedByUpperCasesOnly.Replace(w, m => m.Value.ToLower()))
-                // set upper case the first lower case following a number (Ab9cd -> Ab9Cd)
                 .Select(w => lowerCaseNextToNumber.Replace(w, m => m.Value.ToUpper()))
-                // lower second and next upper case letters except the last if it follows by any lower (ABcDEf -> AbcDef)
                 .Select(w => upperCaseInside.Replace(w, m => m.Value.ToLower()));
 
             return string.Concat(pascalCase);
