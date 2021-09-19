@@ -1,4 +1,6 @@
-﻿namespace ElasticSearchExample.Entites.Entities
+﻿using System;
+
+namespace ElasticSearchExample.Entites.Entities
 {
     public class Person : BaseGuidEntity
     {
@@ -8,5 +10,6 @@
         public string LastName { get; set; }
         public string Password { get; set; }
         public string ImagePath { get; set; }
+        public DateTime CreateDate { get; set; } = DateTime.Now;
     }
 }

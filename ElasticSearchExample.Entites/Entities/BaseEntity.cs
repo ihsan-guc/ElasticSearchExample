@@ -16,9 +16,5 @@ namespace ElasticSearchExample.Entites.Entities
     }
     public class TrackableEntity : BaseGuidEntity
     {
-        public Guid CreaterId { get; set; }
-        public Guid? LastUpdaterId { get; set; }
-        public DateTime CreateDate { get; set; }
-        public DateTime? LastUpdateDate { get; set; }
     }
 }
