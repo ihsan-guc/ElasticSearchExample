@@ -1,11 +1,14 @@
 ﻿@model PersonViewModel
 @{
-    ViewData["Title"] = "Person List" ;
+    ViewData["Title"] = "Person List";
 }
-<h1>Total Person(@Model.Persons.Count())</h1>
+<h1>Person List</h1>
 
 <div class="container">
-
+    <div class="d-flex justify-content-end w-25 float-right mb-2">
+        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" id="searchValue">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" onclick="ElasticSearchName()">Search</button>
+    </div>
     <table class="table">
         <thead>
             <tr>
@@ -15,7 +18,7 @@
                 <th scope="col">Email</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="tableTbody">
             @foreach (var item in Model.Persons)
             {
                 <tr>
@@ -30,3 +33,22 @@
         </tbody>
     </table>
 </div>
+
+<script>
+    function ElasticSearchName() {
+        var searchValue = $("#searchValue").val()
+        var tbody = $("#tableTbody");
+        var settings = {
+            "url": "@Url.Action("PersonSearch", "Home")" + "?searchValue=" + searchValue,
+            "method": "Get",
+            "timeout": 0,
+        };
+        $.ajax(settings).done(function (response) {
+            var tbodyHtml = "";
+            for (i = 0; i < response.length; ++i) {
+                tbodyHtml += '<tr><th scope="row"><img src="' + response[i].imagePath + '" alt="image" width="100" height="100"></th><td>' + response[i].firstName + '</td><td>' + response[i].lastName + '</td><td>'+response[i].email+'</td></tr>'
+            }
+            tbody.html(tbodyHtml);
+        });
+    }
+</script>

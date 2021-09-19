@@ -45,10 +45,16 @@ namespace ElasticSearchExample.Web.Controllers
 
         public IActionResult PersonList()
         {
-            var personList = UnitOfWork.PersonRepository.GetAll().ToList().Take(10);
+            var personList = UnitOfWork.PersonRepository.GetAll().OrderBy(p=>Guid.NewGuid()).Take(10);
             PersonViewModel model = new PersonViewModel();
             model.Persons.AddRange(personList);
             return View(model);
+        }
+        public JsonResult PersonSearch(string searchValue)
+        {
+            var dataList = ElasticSearchName(searchValue)?.Select(p=>p.Id.ToString());
+            var personList = UnitOfWork.PersonRepository.GetQueryable().Where(p => dataList.Contains(p.Id.ToString()));
+            return Json(personList);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -136,7 +142,7 @@ namespace ElasticSearchExample.Web.Controllers
                         }
                         UnitOfWork.Commit();
                     }
-                    
+                    ElasticSearchCreateIndex();
                     return RedirectToAction("Index", "Home");
                 }
                 else
@@ -159,14 +165,14 @@ namespace ElasticSearchExample.Web.Controllers
             var client = ElasticSearchHelper.ElasticClientNode();
             var response = client.IndexManyAsync(personList.Take(2000), "defaultindex");
         }
-
-
         public List<ElasticSearchViewModel> ElasticSearchName(string value)
         {
             var client = ElasticSearchHelper.ElasticClientNode();
-            var dataList = client.Search<ElasticSearchViewModel>(s =>
-            s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(2))
-                  .Value("Mary"))))).Size(100));
+            var dataList = client.Search<ElasticSearchViewModel>(s => 
+            s.Query(q => q.Bool(b => b.Should(sh =>sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(1))
+                  .Value(value))
+            ,m=>m.Match(mq=>mq.Field(f=>f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(1)))
+            ))).Size(10));
             return dataList.Documents.ToList();
         }
         public static string ToPascalCase(string original)
