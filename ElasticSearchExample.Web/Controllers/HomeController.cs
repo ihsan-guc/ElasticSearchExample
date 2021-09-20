@@ -30,16 +30,6 @@ namespace ElasticSearchExample.Web.Controllers
 
         public IActionResult Index()
         {
-            //ElasticSearchHelper.CreateNewIndex();
-
-            //var response = client.Search<ElasticSearchViewModel>(p => p
-            //  .From(0)
-            //  .Size(10)
-            //  .Query(q =>
-            //  q.Term(f => f.FullName, 2) || q.MatchPhrasePrefix(mq => mq.Field(f => f.FullName).Query("HANNUS"))));
-            //var responses = response.Documents?.ToList();
-            //ElasticSearchCreateIndex();
-            
             return View();
         }
 
@@ -168,29 +158,20 @@ namespace ElasticSearchExample.Web.Controllers
         public List<ElasticSearchViewModel> ElasticSearchName(string value)
         {
             var client = ElasticSearchHelper.ElasticClientNode();
-            var dataList = client.Search<ElasticSearchViewModel>(s => 
-            s.Query(q => q.Bool(b => b.Should(sh =>sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(1))
-                  .Value(value))
-            ,m=>m.Match(mq=>mq.Field(f=>f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(1)))
-            ))).Size(10));
-            return dataList.Documents.ToList();
-        }
-        public static string ToPascalCase(string original)
-        {
-            Regex invalidCharsRgx = new Regex("[^_a-zA-Z0-9]");
-            Regex whiteSpace = new Regex(@"(?<=\s)");
-            Regex startsWithLowerCaseChar = new Regex("^[a-z]");
-            Regex firstCharFollowedByUpperCasesOnly = new Regex("(?<=[A-Z])[A-Z0-9]+$");
-            Regex lowerCaseNextToNumber = new Regex("(?<=[0-9])[a-z]");
-            Regex upperCaseInside = new Regex("(?<=[A-Z])[A-Z]+?((?=[A-Z][a-z])|(?=[0-9]))");
-            var pascalCase = invalidCharsRgx.Replace(whiteSpace.Replace(original, "_"), string.Empty)
-                .Split(new char[] { '_' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(w => startsWithLowerCaseChar.Replace(w, m => m.Value.ToUpper()))
-                .Select(w => firstCharFollowedByUpperCasesOnly.Replace(w, m => m.Value.ToLower()))
-                .Select(w => lowerCaseNextToNumber.Replace(w, m => m.Value.ToUpper()))
-                .Select(w => upperCaseInside.Replace(w, m => m.Value.ToLower()));
+            var dataList = client.Search<ElasticSearchViewModel>(s =>
+            s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(1))
+                   .Value(value))
+            , m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(1))))
+            )).Size(10));
 
-            return string.Concat(pascalCase);
+            //var dataList = client.Search<ElasticSearchViewModel>(s =>
+            //s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(1))
+            //       .Value(value))
+            //, m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(1)))
+            //)).Size(10));
+
+
+            return dataList.Documents.ToList();
         }
     }
 }
