@@ -128,16 +128,16 @@ namespace ElasticSearchExample.Web.Controllers
                                 var person = new Person();
                                 var row = currentLine;
                                 var csvItem = rexCsvSplitter.Split(row);
-                                //if (csvItem.Count() == 1)
-                                //{
-                                    person.FirstName = ToPascalCase(csvItem[1]?.ToString()?.ToLower());
+                                if (csvItem.Count() == 1)
+                                {
+                                    person.FirstName = ToPascalCase(csvItem[0]?.ToString()?.ToLower());
                                     person.LastName = ToPascalCase(lastName.OrderBy(p => Guid.NewGuid()).FirstOrDefault()?.ToLower());
                                     person.ImagePath = images.OrderBy(p => Guid.NewGuid()).FirstOrDefault();
                                     person.Email = (person.FirstName + person.LastName).ToLower() + "@companygmail.com";
                                     person.UserName = (person.FirstName + " " + person.LastName).ToUpper();
                                     person.Password = person.FirstName + "123";
                                     UnitOfWork.PersonRepository.Add(person);
-                                //}
+                                }
                             }
                             count++;
                         }
