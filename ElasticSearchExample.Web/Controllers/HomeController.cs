@@ -172,13 +172,8 @@ namespace ElasticSearchExample.Web.Controllers
             var dataList = client.Search<ElasticSearchViewModel>(s =>
             s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(1)).Boost(2)
                    .Value(value))
-            , m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(1))))
-            )).Size(10));
-            //var dataList = client.Search<ElasticSearchViewModel>(s =>
-            //s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(1))
-            //       .Value(value))
-            //, m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(1)))
-            //)).Size(10));
+            , m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.Or).Fuzziness(Fuzziness.EditDistance(1))))
+            )).Size(100));
             return dataList.Documents.ToList();
         }
 

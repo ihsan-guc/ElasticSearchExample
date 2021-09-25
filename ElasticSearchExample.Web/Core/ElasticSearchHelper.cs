@@ -11,10 +11,6 @@ namespace ElasticSearchExample.Web.Core
             var settings = new ConnectionSettings().DefaultIndex("defaultindex");
             var node = new Uri("http://localhost:9200/");
             var client = new ElasticClient(settings);
-            
-            //var node = new Uri("http://localhost:9200/");
-            //var settings = new ConnectionSettings().DefaultMappingFor<ElasticSearchViewModel>(m => m.IndexName("personName_history"));
-            //var client = new ElasticClient(settings);
         }
         public static ElasticClient ElasticClientNode()
         {
