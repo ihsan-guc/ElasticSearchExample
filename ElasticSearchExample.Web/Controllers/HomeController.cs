@@ -35,14 +35,14 @@ namespace ElasticSearchExample.Web.Controllers
 
         public IActionResult PersonList()
         {
-            var personList = UnitOfWork.PersonRepository.GetAll().OrderBy(p=>Guid.NewGuid()).Take(10);
+            var personList = UnitOfWork.PersonRepository.GetAll().OrderBy(p => Guid.NewGuid()).Take(10);
             PersonViewModel model = new PersonViewModel();
             model.Persons.AddRange(personList);
             return View(model);
         }
         public JsonResult PersonSearch(string searchValue)
         {
-            var dataList = ElasticSearchName(searchValue)?.Select(p=>p.Id.ToString());
+            var dataList = ElasticSearchName(searchValue)?.Select(p => p.Id.ToString());
             var personList = UnitOfWork.PersonRepository.GetQueryable().Where(p => dataList.Contains(p.Id.ToString()));
             return Json(personList);
         }
@@ -101,7 +101,7 @@ namespace ElasticSearchExample.Web.Controllers
                         fs.Close();
                     }
 
-                    Thread.Sleep(3000);
+                    Thread.Sleep(1000);
                     using (StreamReader sr = new StreamReader(path, Encoding.Default, true))
                     {
                         string currentLine;
@@ -115,18 +115,16 @@ namespace ElasticSearchExample.Web.Controllers
                                 var person = new Person();
                                 var row = currentLine;
                                 var csvItem = rexCsvSplitter.Split(row);
-                                //if (csvItem.Count() == 1)
-                                //{
-                                person.FirstName = ToPascalCase(csvItem[1]?.ToString()?.ToLower());
-
-                                person.LastName = ToPascalCase(lastName.OrderBy(p => Guid.NewGuid()).FirstOrDefault()?.ToLower());
-                                person.ImagePath = images.OrderBy(p => Guid.NewGuid()).FirstOrDefault();
-                                person.Email = (person.FirstName + person.LastName).ToLower() + "@companygmail.com";
-                                person.UserName = (person.FirstName + " " + person.LastName).ToUpper();
-                                person.Password = person.FirstName + "123";
-                                UnitOfWork.PersonRepository.Add(person);
-
-                                //}
+                                if (csvItem.Count() == 1)
+                                {
+                                    person.FirstName = ToPascalCase(csvItem[0]?.ToString()?.ToLower());
+                                    person.LastName = ToPascalCase(lastName.OrderBy(p => Guid.NewGuid()).FirstOrDefault()?.ToLower());
+                                    person.ImagePath = images.OrderBy(p => Guid.NewGuid()).FirstOrDefault();
+                                    person.Email = (person.FirstName + person.LastName).ToLower() + "@companygmail.com";
+                                    person.UserName = (person.FirstName + " " + person.LastName).ToUpper();
+                                    person.Password = person.FirstName + "123";
+                                    UnitOfWork.PersonRepository.Add(person);
+                                }
                             }
                             count++;
                         }
@@ -159,18 +157,15 @@ namespace ElasticSearchExample.Web.Controllers
         {
             var client = ElasticSearchHelper.ElasticClientNode();
             var dataList = client.Search<ElasticSearchViewModel>(s =>
-            s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(1))
+            s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(1)).Boost(2)
                    .Value(value))
             , m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(1))))
             )).Size(10));
-
             //var dataList = client.Search<ElasticSearchViewModel>(s =>
             //s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(1))
             //       .Value(value))
             //, m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(1)))
             //)).Size(10));
-
-
             return dataList.Documents.ToList();
         }
     }
