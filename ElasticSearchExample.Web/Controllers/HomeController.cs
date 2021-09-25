@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Nest;
+using Newtonsoft.Json;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -69,7 +71,18 @@ namespace ElasticSearchExample.Web.Controllers
                     uploadFile.CopyTo(target);
                     var lastName = new List<string>();
                     var images = new List<string>();
-                    images.AddRange(new string[] { "https://cdn.pixabay.com/photo/2021/08/04/03/06/hanoi-6520941__480.jpg", "https://cdn.pixabay.com/photo/2020/01/20/22/21/palace-4781577__340.jpg", "https://cdn.pixabay.com/photo/2017/07/15/19/13/hotel-2507432__340.jpg", "https://cdn.pixabay.com/photo/2021/06/22/14/55/girl-6356393__340.jpg", "https://cdn.pixabay.com/photo/2020/12/03/12/35/sunset-5800386__340.jpg", "https://cdn.pixabay.com/photo/2019/03/25/20/17/kaohsiung-4081259__340.jpg" });
+                    var imageList = ImageUrlList()?.data?.Select(p => p.image_url);
+                    if (imageList != null)
+                    {
+                        foreach (var imageItem in imageList)
+                        {
+                            var image = "https://randomwordgenerator.com" + imageItem;
+                            images.Add(image);
+                        }
+                    }
+                    else
+                        images.AddRange(new string[] { "https://cdn.pixabay.com/photo/2021/08/04/03/06/hanoi-6520941__480.jpg", "https://cdn.pixabay.com/photo/2020/01/20/22/21/palace-4781577__340.jpg", "https://cdn.pixabay.com/photo/2017/07/15/19/13/hotel-2507432__340.jpg", "https://cdn.pixabay.com/photo/2021/06/22/14/55/girl-6356393__340.jpg", "https://cdn.pixabay.com/photo/2020/12/03/12/35/sunset-5800386__340.jpg", "https://cdn.pixabay.com/photo/2019/03/25/20/17/kaohsiung-4081259__340.jpg" });
+
                     var lastNamePath = Path.Combine(_hostingEnvironment.WebRootPath) + "\\LastName\\" + "LastName.csv";
                     using (StreamReader sr = new StreamReader(lastNamePath, Encoding.Default, true))
                     {
@@ -115,16 +128,16 @@ namespace ElasticSearchExample.Web.Controllers
                                 var person = new Person();
                                 var row = currentLine;
                                 var csvItem = rexCsvSplitter.Split(row);
-                                if (csvItem.Count() == 1)
-                                {
-                                    person.FirstName = ToPascalCase(csvItem[0]?.ToString()?.ToLower());
+                                //if (csvItem.Count() == 1)
+                                //{
+                                    person.FirstName = ToPascalCase(csvItem[1]?.ToString()?.ToLower());
                                     person.LastName = ToPascalCase(lastName.OrderBy(p => Guid.NewGuid()).FirstOrDefault()?.ToLower());
                                     person.ImagePath = images.OrderBy(p => Guid.NewGuid()).FirstOrDefault();
                                     person.Email = (person.FirstName + person.LastName).ToLower() + "@companygmail.com";
                                     person.UserName = (person.FirstName + " " + person.LastName).ToUpper();
                                     person.Password = person.FirstName + "123";
                                     UnitOfWork.PersonRepository.Add(person);
-                                }
+                                //}
                             }
                             count++;
                         }
@@ -167,6 +180,17 @@ namespace ElasticSearchExample.Web.Controllers
             //, m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(1)))
             //)).Size(10));
             return dataList.Documents.ToList();
+        }
+
+        public ImageDTO ImageUrlList()
+        {
+            var client = new RestClient("https://randomwordgenerator.com/json/pictures.php?category=all");
+            client.Timeout = -1;
+            var request = new RestRequest(Method.GET);
+            IRestResponse response = client.Execute(request);
+            Console.WriteLine(response.Content);
+            ImageDTO imageList = JsonConvert.DeserializeObject<ImageDTO>(response.Content);
+            return imageList;
         }
     }
 }
