@@ -6,6 +6,11 @@
 
 <div class="container">
     <h3 class="mb-3">Person List</h3>
+
+    <div class="d-flex justify-content-start w-25 mb-2">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" onclick="ElasticSearchCreateIndex()">Elastic Create</button>
+    </div>
+
     <div class="d-flex justify-content-end w-25 float-right mb-2">
         <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" id="searchValue">
         <button class="btn btn-outline-success my-2 my-sm-0" type="submit" onclick="ElasticSearchName()">Search</button>
@@ -52,4 +57,15 @@
             tbody.html(tbodyHtml);
         });
     }
+    function ElasticSearchCreateIndex() {
+        var settings = {
+            "url": "@Url.Action("ElasticSearchCreateIndex", "Home")",
+            "method": "Get",
+            "timeout": 0,
+        };
+        $.ajax(settings).done(function (response) {
+
+        });
+    }
+    
 </script>

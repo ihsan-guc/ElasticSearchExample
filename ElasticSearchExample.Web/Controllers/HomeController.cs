@@ -128,22 +128,22 @@ namespace ElasticSearchExample.Web.Controllers
                                 var person = new Person();
                                 var row = currentLine;
                                 var csvItem = rexCsvSplitter.Split(row);
-                                if (csvItem.Count() == 1)
-                                {
-                                    person.FirstName = ToPascalCase(csvItem[0]?.ToString()?.ToLower());
-                                    person.LastName = ToPascalCase(lastName.OrderBy(p => Guid.NewGuid()).FirstOrDefault()?.ToLower());
-                                    person.ImagePath = images.OrderBy(p => Guid.NewGuid()).FirstOrDefault();
-                                    person.Email = (person.FirstName + person.LastName).ToLower() + "@companygmail.com";
-                                    person.UserName = (person.FirstName + " " + person.LastName).ToUpper();
-                                    person.Password = person.FirstName + "123";
-                                    UnitOfWork.PersonRepository.Add(person);
-                                }
+                                //if (csvItem.Count() == 1)
+                                //{
+                                person.FirstName = ToPascalCase(csvItem[1]?.ToString()?.ToLower());
+                                person.LastName = ToPascalCase(lastName.OrderBy(p => Guid.NewGuid()).FirstOrDefault()?.ToLower());
+                                person.ImagePath = images.OrderBy(p => Guid.NewGuid()).FirstOrDefault();
+                                person.Email = (person.FirstName + person.LastName).ToLower() + "@companygmail.com";
+                                person.UserName = (person.FirstName + " " + person.LastName).ToUpper();
+                                person.Password = person.FirstName + "123";
+                                person.IsElastic = false;
+                                UnitOfWork.PersonRepository.Add(person);
+                                //}
                             }
                             count++;
                         }
                         UnitOfWork.Commit();
                     }
-                    ElasticSearchCreateIndex();
                     return RedirectToAction("Index", "Home");
                 }
                 else
@@ -157,22 +157,30 @@ namespace ElasticSearchExample.Web.Controllers
 
         public async void ElasticSearchCreateIndex()
         {
-            var personList = UnitOfWork.PersonRepository.GetAll().Where(p => p.CreateDate >= DateTime.Now.AddHours(-1)).ToList().Select(p => new ElasticSearchViewModel()
+            var personList = UnitOfWork.PersonRepository.GetAll().Where(p => p.IsElastic == false).ToList().Select(p => new ElasticSearchViewModel()
             {
                 Id = p.Id,
                 FullName = p.FirstName + " " + p.LastName
             });
-            ElasticSearchHelper.CreateNewIndex();
-            var client = ElasticSearchHelper.ElasticClientNode();
-            var response = client.IndexManyAsync(personList.Take(2000), "defaultindex");
+            var elasticNode = new ElasticSearchHelper();
+            var client = elasticNode.ElasticClientNode;
+            var response = client.IndexManyAsync(personList.Take(2000));
+
+            var personAll = UnitOfWork.PersonRepository.GetAll();
+            foreach (var personItem in personAll)
+            {
+                personItem.IsElastic = true;
+            }
+            UnitOfWork.Commit();
         }
         public List<ElasticSearchViewModel> ElasticSearchName(string value)
         {
-            var client = ElasticSearchHelper.ElasticClientNode();
+            var elasticNode = new ElasticSearchHelper();
+            var client = elasticNode.ElasticClientNode;
             var dataList = client.Search<ElasticSearchViewModel>(s =>
             s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(1)).Boost(2)
                    .Value(value))
-            , m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.Or).Fuzziness(Fuzziness.EditDistance(1))))
+            , m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(1))))
             )).Size(100));
             return dataList.Documents.ToList();
         }

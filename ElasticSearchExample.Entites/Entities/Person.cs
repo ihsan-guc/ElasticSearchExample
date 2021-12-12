@@ -10,6 +10,7 @@ namespace ElasticSearchExample.Entites.Entities
         public string LastName { get; set; }
         public string Password { get; set; }
         public string ImagePath { get; set; }
+        public bool IsElastic { get; set; }
         public DateTime CreateDate { get; set; } = DateTime.Now;
     }
 }

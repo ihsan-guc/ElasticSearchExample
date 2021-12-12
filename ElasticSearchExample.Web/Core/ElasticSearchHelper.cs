@@ -1,23 +1,48 @@
-﻿using Nest;
+﻿using Microsoft.Extensions.Configuration;
+using Nest;
 using System;
 
 namespace ElasticSearchExample.Web.Core
 {
-    public static class ElasticSearchHelper
+    public class ElasticSearchHelper
     {
-        public static ConnectionSettings ConnectionSettings { get; set; }
-        public static void CreateNewIndex()
+        public ElasticClient ElasticClientNode { get; set; }
+        public ElasticSearchHelper()
         {
-            var settings = new ConnectionSettings().DefaultIndex("defaultindex");
-            var node = new Uri("http://localhost:9200/");
-            var client = new ElasticClient(settings);
+            var esNode = new Uri(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("MyField")["ElasticConnectionSettings"].ToString());
+
+            var searchIndex = new ConnectionSettings(esNode)
+                .DisablePing()
+                .SniffOnStartup(false)
+                .SniffOnConnectionFault(false)
+                .DefaultIndex(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build()
+                .GetSection("MyField")["ElasticIndex"].ToString());
+
+            ElasticClientNode = new ElasticClient(searchIndex);
+            
+            var indexName = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build()
+                .GetSection("MyField")["ElasticIndex"].ToString();
+
+            CheckExistsAndCreatSearch(indexName);
         }
-        public static ElasticClient ElasticClientNode()
+        public void CheckExistsAndCreatSearch(string indexName)
         {
-            var node = new Uri("http://localhost:9200/");
-            var settings = new ConnectionSettings().DefaultIndex("defaultindex");
-            var client = new ElasticClient(settings);
-            return client;
+            
+            if (!ElasticClientNode.Indices.Exists(indexName).Exists)
+            {
+                var newIndexName = indexName + System.DateTime.Now.Ticks;
+
+                var indexSettings = new IndexSettings();
+                indexSettings.NumberOfReplicas = 1;
+                indexSettings.NumberOfShards = 3;
+
+                var response = ElasticClientNode.Indices.Create(newIndexName, index =>
+                   index.Map<ElasticSearchViewModel>(m => m.AutoMap()
+                          )
+                  .InitializeUsing(new IndexState() { Settings = indexSettings })
+                  .Aliases(a => a.Alias(indexName)));
+
+            }
         }
     }
     public class ElasticSearchViewModel
