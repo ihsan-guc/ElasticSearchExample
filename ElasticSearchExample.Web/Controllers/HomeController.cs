@@ -4,9 +4,10 @@ using ElasticSearchExample.Web.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Nest;
 using Newtonsoft.Json;
+using NLog;
+using NLog.Web;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -21,12 +22,10 @@ namespace ElasticSearchExample.Web.Controllers
 {
     public class HomeController : BaseController
     {
-        private readonly ILogger<HomeController> _logger;
         private IWebHostEnvironment _hostingEnvironment;
-
-        public HomeController(ILogger<HomeController> logger, IWebHostEnvironment environment) : base(environment)
+        private static readonly NLog.Logger Logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
+        public HomeController(IWebHostEnvironment environment) : base(environment)
         {
-            _logger = logger;
             _hostingEnvironment = environment;
         }
 
@@ -34,13 +33,22 @@ namespace ElasticSearchExample.Web.Controllers
         {
             return View();
         }
-
         public IActionResult PersonList()
         {
-            var personList = UnitOfWork.PersonRepository.GetAll().OrderBy(p => Guid.NewGuid()).Take(10);
-            PersonViewModel model = new PersonViewModel();
-            model.Persons.AddRange(personList);
-            return View(model);
+            try
+            {
+                Logger.Info("Get Person List");
+                var personList = UnitOfWork.PersonRepository.GetAll().OrderBy(p => Guid.NewGuid()).Take(10);
+                PersonViewModel model = new PersonViewModel();
+                model.Persons.AddRange(personList);
+                Logger.Info("Get Random 10 Person");
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                return View("Index","Home");
+            }
         }
         public JsonResult PersonSearch(string searchValue)
         {
@@ -48,7 +56,6 @@ namespace ElasticSearchExample.Web.Controllers
             var personList = UnitOfWork.PersonRepository.GetQueryable().Where(p => dataList.Contains(p.Id.ToString()));
             return Json(personList);
         }
-
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -87,7 +94,6 @@ namespace ElasticSearchExample.Web.Controllers
                     using (StreamReader sr = new StreamReader(lastNamePath, Encoding.Default, true))
                     {
                         string currentLine;
-                        int counter = 1;
                         Regex rexCsvSplitter = new Regex(@",(?=(?:[^""]*""[^""]*"")*(?![^""]*""))");
                         var count = 1;
                         while ((currentLine = sr.ReadLine()) != null)
@@ -118,7 +124,6 @@ namespace ElasticSearchExample.Web.Controllers
                     using (StreamReader sr = new StreamReader(path, Encoding.Default, true))
                     {
                         string currentLine;
-                        int counter = 1;
                         Regex rexCsvSplitter = new Regex(@",(?=(?:[^""]*""[^""]*"")*(?![^""]*""))");
                         var count = 1;
                         while ((currentLine = sr.ReadLine()) != null)
@@ -154,8 +159,7 @@ namespace ElasticSearchExample.Web.Controllers
 
             return View();
         }
-
-        public async void ElasticSearchCreateIndex()
+        public void ElasticSearchCreateIndex()
         {
             var personList = UnitOfWork.PersonRepository.GetAll().Where(p => p.IsElastic == false).ToList().Select(p => new ElasticSearchViewModel()
             {
@@ -178,13 +182,16 @@ namespace ElasticSearchExample.Web.Controllers
             var elasticNode = new ElasticSearchHelper();
             var client = elasticNode.ElasticClientNode;
             var dataList = client.Search<ElasticSearchViewModel>(s =>
+            //s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(1)).Boost(2)
+            //       .Value(value))
+            //, m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(2))))
+            //)).Size(100));
             s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(1)).Boost(2)
                    .Value(value))
             , m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(1))))
-            )).Size(100));
+            )).Size(10));
             return dataList.Documents.ToList();
         }
-
         public ImageDTO ImageUrlList()
         {
             var client = new RestClient("https://randomwordgenerator.com/json/pictures.php?category=all");
