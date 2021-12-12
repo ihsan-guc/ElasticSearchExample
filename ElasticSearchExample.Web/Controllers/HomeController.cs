@@ -47,7 +47,7 @@ namespace ElasticSearchExample.Web.Controllers
             catch (Exception ex)
             {
                 Logger.Error(ex);
-                return View("Index","Home");
+                return View("Index", "Home");
             }
         }
         public JsonResult PersonSearch(string searchValue)
