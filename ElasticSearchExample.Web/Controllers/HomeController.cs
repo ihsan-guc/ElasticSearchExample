@@ -28,7 +28,6 @@ namespace ElasticSearchExample.Web.Controllers
         {
             _hostingEnvironment = environment;
         }
-
         public IActionResult Index()
         {
             return View();
