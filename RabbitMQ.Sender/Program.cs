@@ -24,19 +24,21 @@ namespace RabbitMQ.Sender
             using (IConnection connection = factory.CreateConnection())
             using (IModel channel = connection.CreateModel())
             {
-                channel.QueueDeclare(queue: mainQueue);
-                channel.QueueDeclare(queue: mainQueue2);
-                channel.QueueDeclare(queue: mainQueue3);
+                channel.QueueDeclare(queue: mainQueue , durable: false, exclusive: false, autoDelete: false, arguments: null);
+                channel.QueueDeclare(queue: mainQueue2, durable: false, exclusive: false, autoDelete: false, arguments: null);
+                channel.QueueDeclare(queue: mainQueue3, durable: false, exclusive: false, autoDelete: false, arguments: null);
 
+                var count = 0;
                 foreach (var queueItem in queueModel)
                 {
+
                     string message = JsonConvert.SerializeObject(queueItem);
                     var body = Encoding.UTF8.GetBytes(message);
-                    if (channel.MessageCount(mainQueue) < 20)
+                    if (count < 20)
                     {
                         channel.BasicPublish(exchange: "",routingKey: mainQueue,basicProperties: null,body: body);
                     }
-                    else if (channel.MessageCount(mainQueue2) < 20)
+                    else if (count < 40)
                     {
                         channel.BasicPublish(exchange: "", routingKey: mainQueue2, basicProperties: null, body: body);
                     }
@@ -44,8 +46,8 @@ namespace RabbitMQ.Sender
                     {
                         channel.BasicPublish(exchange: "", routingKey: mainQueue3, basicProperties: null, body: body);
                     }
+                    count++;
                     Console.WriteLine(message);
-                    Thread.Sleep(1000);
                 }
             }
         }
