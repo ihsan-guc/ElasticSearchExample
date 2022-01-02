@@ -13,9 +13,17 @@ namespace BenchmarkConsole
         static void Main(string[] args)
         {
             var result = BenchmarkRunner.Run<BenchMarkDemo>();
+
             Console.WriteLine("Bencmark Testting.!");
         }
     }
+    /// <summary>
+    /// Benchmark Result
+    ///|                        Method |     Mean |    Error |   StdDev |
+    //|------------------------------- |---------:|---------:|---------:|
+    //| ElasticSearchFuzzinessOneRatio | 25.95 ms | 0.443 ms | 0.414 ms |
+    //| ElasticSearchFuzzinessTwoRatio | 26.85 ms | 0.526 ms | 0.627 ms |
+    /// </summary>
     public class BenchMarkDemo
     {
         [Benchmark]
