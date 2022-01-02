@@ -9,9 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElasticSearchExample.Data.D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElasticSearchExample.Web", "ElasticSearchExample.Web\ElasticSearchExample.Web.csproj", "{B1A64252-395E-49BB-89D3-C11D1DF28426}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitMQ.Sender", "RabbitMQ.Sender\RabbitMQ.Sender.csproj", "{9E329832-25E5-4D2C-AFA1-794662CC41E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitMQ.Sender", "RabbitMQ.Sender\RabbitMQ.Sender.csproj", "{9E329832-25E5-4D2C-AFA1-794662CC41E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitMQ.Receiver", "RabbitMQ.Receiver\RabbitMQ.Receiver.csproj", "{AEFE72A2-A0A3-439E-8FAC-B08623E036F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitMQ.Receiver", "RabbitMQ.Receiver\RabbitMQ.Receiver.csproj", "{AEFE72A2-A0A3-439E-8FAC-B08623E036F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenchmarkConsole", "BenchmarkConsole\BenchmarkConsole.csproj", "{92AFC4FA-B878-4311-98FE-79BB53E49ED0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{AEFE72A2-A0A3-439E-8FAC-B08623E036F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AEFE72A2-A0A3-439E-8FAC-B08623E036F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AEFE72A2-A0A3-439E-8FAC-B08623E036F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92AFC4FA-B878-4311-98FE-79BB53E49ED0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92AFC4FA-B878-4311-98FE-79BB53E49ED0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92AFC4FA-B878-4311-98FE-79BB53E49ED0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92AFC4FA-B878-4311-98FE-79BB53E49ED0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
