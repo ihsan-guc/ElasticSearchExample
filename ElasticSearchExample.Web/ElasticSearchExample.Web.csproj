@@ -29,4 +29,8 @@
     <ProjectReference Include="..\ElasticSearchExample.Entites\ElasticSearchExample.Entites.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Helper\" />
+  </ItemGroup>
+
 </Project>
