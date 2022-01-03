@@ -1,6 +1,7 @@
 using ElasticSearchExample.Data.DAL;
 using ElasticSearchExample.Data.DAL.Repository;
 using ElasticSearchExample.Data.DAL.Repository.Core;
+using ElasticSearchExample.Web.Helper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,8 @@ namespace ElasticSearchExample.Web
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IPersonRepository, PersonRepository>();
             services.AddScoped<PersonContext, PersonContext>();
-
+            //services.AddScoped<Microsoft.Extensions.Hosting.IHostedService, ElasticSearchCreateIndexService>();
+            services.AddHostedService<ElasticSearchCreateIndexService>();
             services.AddControllersWithViews();
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,PersonContext context)

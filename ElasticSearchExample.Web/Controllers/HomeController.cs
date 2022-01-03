@@ -193,13 +193,20 @@ namespace ElasticSearchExample.Web.Controllers
         }
         public ImageDTO ImageUrlList()
         {
-            var client = new RestClient("https://randomwordgenerator.com/json/pictures.php?category=all");
-            client.Timeout = -1;
-            var request = new RestRequest(Method.GET);
-            IRestResponse response = client.Execute(request);
-            Console.WriteLine(response.Content);
-            ImageDTO imageList = JsonConvert.DeserializeObject<ImageDTO>(response.Content);
-            return imageList;
+            try
+            {
+                var client = new RestClient("https://randomwordgenerator.com/json/pictures.php?category=all");
+                client.Timeout = -1;
+                var request = new RestRequest(Method.GET);
+                IRestResponse response = client.Execute(request);
+                Console.WriteLine(response.Content);
+                ImageDTO imageList = JsonConvert.DeserializeObject<ImageDTO>(response.Content);
+                return imageList;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }
