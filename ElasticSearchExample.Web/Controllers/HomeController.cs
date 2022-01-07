@@ -1,6 +1,7 @@
 ﻿using ElasticSearchExample.Entites.Entities;
 using ElasticSearchExample.Web.Core;
 using ElasticSearchExample.Web.Models;
+using Hangfire;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,13 +24,24 @@ namespace ElasticSearchExample.Web.Controllers
     public class HomeController : BaseController
     {
         private IWebHostEnvironment _hostingEnvironment;
+        private IBackgroundJobClient _backgroundJobs;
         private static readonly NLog.Logger Logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
-        public HomeController(IWebHostEnvironment environment) : base(environment)
+        public HomeController(IWebHostEnvironment environment, IBackgroundJobClient backgroundJobs) : base(environment, backgroundJobs)
         {
             _hostingEnvironment = environment;
+            _backgroundJobs = backgroundJobs;
         }
         public IActionResult Index()
         {
+            ////Fire-and-Forget
+            //BackgroundJob.Enqueue(() => ElasticSearchCreateIndex());
+
+            //Delayed
+            BackgroundJob.Schedule(() => ElasticSearchCreateIndex(), TimeSpan.FromDays(1));
+
+            //Recurring
+            RecurringJob.AddOrUpdate(() => ElasticSearchCreateIndex(), Cron.Minutely);
+
             return View();
         }
         public IActionResult PersonList()
@@ -165,16 +177,19 @@ namespace ElasticSearchExample.Web.Controllers
                 Id = p.Id,
                 FullName = p.FirstName + " " + p.LastName
             });
-            var elasticNode = new ElasticSearchHelper();
-            var client = elasticNode.ElasticClientNode;
-            var response = client.IndexManyAsync(personList.Take(2000));
-
-            var personAll = UnitOfWork.PersonRepository.GetAll();
-            foreach (var personItem in personAll)
+            if (personList.Count() > 0)
             {
-                personItem.IsElastic = true;
+                var elasticNode = new ElasticSearchHelper();
+                var client = elasticNode.ElasticClientNode;
+                var response = client.IndexManyAsync(personList.Take(2000));
+
+                var personAll = UnitOfWork.PersonRepository.GetAll();
+                foreach (var personItem in personAll)
+                {
+                    personItem.IsElastic = true;
+                }
+                UnitOfWork.Commit();
             }
-            UnitOfWork.Commit();
         }
         public List<ElasticSearchViewModel> ElasticSearchName(string value)
         {

@@ -1,5 +1,6 @@
 ﻿using ElasticSearchExample.Data.DAL.Repository.Core;
 using ElasticSearchExample.Web.Core;
+using Hangfire;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -11,9 +12,11 @@ namespace ElasticSearchExample.Web.Controllers
     public class BaseController : Controller
     {
         private IWebHostEnvironment _hostingEnvironment;
-        public BaseController(IWebHostEnvironment environment)
+        private IBackgroundJobClient _backgroundJobs;
+        public BaseController(IWebHostEnvironment environment, IBackgroundJobClient backgroundJobs)
         {
             _hostingEnvironment = environment;
+            _backgroundJobs = backgroundJobs;
         }
         public IUnitOfWork _UnitOfWork { get; set; }
         public IUnitOfWork UnitOfWork
