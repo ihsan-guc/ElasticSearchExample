@@ -12,11 +12,11 @@ namespace ElasticSearchExample.Web.Controllers
     public class BaseController : Controller
     {
         private IWebHostEnvironment _hostingEnvironment;
-        private IBackgroundJobClient _backgroundJobs;
-        public BaseController(IWebHostEnvironment environment, IBackgroundJobClient backgroundJobs)
+        //private IBackgroundJobClient _backgroundJobs;
+        public BaseController(IWebHostEnvironment environment)
         {
             _hostingEnvironment = environment;
-            _backgroundJobs = backgroundJobs;
+            //_backgroundJobs = backgroundJobs;
         }
         public IUnitOfWork _UnitOfWork { get; set; }
         public IUnitOfWork UnitOfWork

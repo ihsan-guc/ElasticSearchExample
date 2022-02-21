@@ -29,7 +29,7 @@ namespace ElasticSearchExample.Web
             services.AddScoped<IPersonRepository, PersonRepository>();
             services.AddScoped<PersonContext, PersonContext>();
             //ElasticSearch için yazýlan bir tane job
-            services.AddHostedService<ElasticSearchCreateIndexService>();
+            //services.AddHostedService<ElasticSearchCreateIndexService>();
             services.AddControllersWithViews();
 
             services.AddEntityFrameworkNpgsql().AddDbContext<PersonContext>(options =>
@@ -37,13 +37,13 @@ namespace ElasticSearchExample.Web
                 options.UseNpgsql(Configuration.GetConnectionString("PersonConnection"));
             });
 
-            services.AddHangfire(x => x.UsePostgreSqlStorage(Configuration.GetConnectionString("PersonConnection")));
-            services.AddHangfireServer();
+            //services.AddHangfire(x => x.UsePostgreSqlStorage(Configuration.GetConnectionString("PersonConnection")));
+            //services.AddHangfireServer();
 
             //        services.AddHangfire(x =>
             //x.UsePostgreSqlStorage(Configuration.GetConnectionString("PersonConnection")));
         }
-        public void Configure(IApplicationBuilder app, IBackgroundJobClient backgroundJobs, IWebHostEnvironment env, PersonContext context)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, PersonContext context)
         {
             context.Database.EnsureCreated();
             if (env.IsDevelopment())
@@ -61,19 +61,19 @@ namespace ElasticSearchExample.Web
             app.UseRouting();
 
             app.UseAuthorization();
-            app.UseHangfireDashboard("", new DashboardOptions
-            {
-                DashboardTitle = "Hangfire Testting",
-                //Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
-            });
-            backgroundJobs.Enqueue(() => Console.WriteLine("Hello world from Hangfire!"));
+            //app.UseHangfireDashboard("", new DashboardOptions
+            //{
+            //    DashboardTitle = "Hangfire Testting",
+            //    //Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
+            //});
+            //backgroundJobs.Enqueue(() => Console.WriteLine("Hello world from Hangfire!"));
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
-                endpoints.MapHangfireDashboard();
+                //endpoints.MapHangfireDashboard();
             });
         }
     }

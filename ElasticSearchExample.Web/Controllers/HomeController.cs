@@ -24,23 +24,23 @@ namespace ElasticSearchExample.Web.Controllers
     public class HomeController : BaseController
     {
         private IWebHostEnvironment _hostingEnvironment;
-        private IBackgroundJobClient _backgroundJobs;
+        //private IBackgroundJobClient _backgroundJobs;
         private static readonly NLog.Logger Logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
-        public HomeController(IWebHostEnvironment environment, IBackgroundJobClient backgroundJobs) : base(environment, backgroundJobs)
+        public HomeController(IWebHostEnvironment environment) : base(environment)
         {
             _hostingEnvironment = environment;
-            _backgroundJobs = backgroundJobs;
+            //_backgroundJobs = backgroundJobs;
         }
         public IActionResult Index()
         {
-            ////Fire-and-Forget
-            //BackgroundJob.Enqueue(() => ElasticSearchCreateIndex());
+            //////Fire-and-Forget
+            ////BackgroundJob.Enqueue(() => ElasticSearchCreateIndex());
 
-            //Delayed
-            BackgroundJob.Schedule(() => ElasticSearchCreateIndex(), TimeSpan.FromDays(1));
+            ////Delayed
+            //BackgroundJob.Schedule(() => ElasticSearchCreateIndex(), TimeSpan.FromDays(1));
 
-            //Recurring
-            RecurringJob.AddOrUpdate(() => ElasticSearchCreateIndex(), Cron.Minutely);
+            ////Recurring
+            //RecurringJob.AddOrUpdate(() => ElasticSearchCreateIndex(), Cron.Minutely);
 
             return View();
         }
@@ -200,9 +200,9 @@ namespace ElasticSearchExample.Web.Controllers
             //       .Value(value))
             //, m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(2))))
             //)).Size(100));
-            s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(1)).Boost(2)
+            s.Query(q => q.Bool(b => b.Should(sh => sh.Fuzzy(f => f.Field(fi => fi.FullName).Fuzziness(Fuzziness.EditDistance(2)).Boost(2)
                    .Value(value))
-            , m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(1))))
+            , m => m.Match(mq => mq.Field(f => f.FullName).Query(value).Operator(Operator.And).Fuzziness(Fuzziness.EditDistance(2))))
             )).Size(10));
             return dataList.Documents.ToList();
         }

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ElasticSearchExample.Web.Helper
 {
-    public class ElasticSearchCreateIndexService : IHostedService, IDisposable
+    public class ElasticSearchCreateIndexService /*: IHostedService, IDisposable*/
     {
         private int executionCount = 0;
         public IServiceProvider Services { get; }
@@ -20,13 +20,13 @@ namespace ElasticSearchExample.Web.Helper
             Services = services;
         }
 
-        public Task StartAsync(CancellationToken stoppingToken)
-        {
-            _timer = new Timer(DoWork, null, TimeSpan.Zero,
-                TimeSpan.FromSeconds(5));
+        //public Task StartAsync(CancellationToken stoppingToken)
+        //{
+        //    _timer = new Timer(DoWork, null, TimeSpan.Zero,
+        //        TimeSpan.FromSeconds(5));
 
-            return Task.CompletedTask;
-        }
+        //    return Task.CompletedTask;
+        //}
         private void DoWork(object? state)
         {
             var count = Interlocked.Increment(ref executionCount);
